@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.2.2
-#update            28.10.2022
-#changelog         Wyswietlanie wartosci i nazwy danej kryptowaluty w formie tekstu czytanego
+#version           0.2.3
+#update            17.11.2022
+#changelog         Zmiana wartosci wyswietlanych i zapisywanych
 #description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina
 
 import os
@@ -13,14 +13,13 @@ from pycoingecko import CoinGeckoAPI
 
 def pobieranie():
     czas=datetime.datetime.now()
-    plik.write(str(czas) + "\n")
+    data=czas.strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
     cg=CoinGeckoAPI()
     dane=cg.get_price(ids=Kwaluta, vs_currencies=Rwaluta)
-    tablica = [dane]
-    wyniktemp = dane[Kwaluta][Rwaluta]
-    wynik = str(wyniktemp)
-    print("Kryptowaluta " + Kwaluta + " kosztuje " + wynik + " " + Rwaluta)
-    plik.write(str(tablica) + "\n"+ "\n")
+    cena = dane[Kwaluta][Rwaluta]
+    wynik = str(cena)
+    plik.write(str(wynik+","+data+"\n"))
+    print(Kwaluta+" "+wynik+" "+Rwaluta+"\n")
 
 def spanie():
     time.sleep(sekundy)
