@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.0
-#update            14.02.2023
-#changelog         Dodanie zapisu do bazy danych oraz reorganizacja kodu
+#version           0.4.1
+#update            15.02.2023
+#changelog         Dodanie brakujacych zakonczen polaczen z baza danych
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -52,7 +52,10 @@ def create_table():
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
     cur.execute('CREATE TABLE IF NOT EXISTS crypto (id INTEGER PRIMARY KEY, Cryptocurrency TEXT, value FLOAT, Currency TEXT, date TEXT)')
+    conn.commit()
+    conn.close()
     return 0
+
 
 def drop_table():
     conn=sqlite3.connect('crypto.db')
@@ -60,6 +63,7 @@ def drop_table():
     cur=conn.cursor()
     cur.execute('DROP TABLE crypto')
     conn.commit()
+    conn.close()
 
 def insert(cryptocurrency, currency):
     data=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
@@ -69,6 +73,7 @@ def insert(cryptocurrency, currency):
     cur=conn.cursor()
     cur.execute('INSERT INTO crypto VALUES (NULL,?,?,?,?)', (cryptocurrency, value, currency, data))
     conn.commit()
+    conn.close()
     print("DATABASE UPDATED!")
 
 def view():
@@ -80,6 +85,7 @@ def view():
     dane = cur.fetchall()
     for row in dane:
         print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
+    conn.close()
 
 
 if __name__ == '__main__':
