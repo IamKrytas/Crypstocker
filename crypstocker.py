@@ -1,15 +1,16 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.2.3
-#update            17.11.2022
-#changelog         Zmiana wartosci wyswietlanych i zapisywanych
-#description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina
+#version           0.3.1
+#update            05.12.2022
+#changelog         Dodanie wyswietlania wykresu pobierajac dane z pliku txt
+#description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina oraz tworzeniem wykresu
 
 import os
 import time
 import datetime
 from pycoingecko import CoinGeckoAPI
+import matplotlib.pyplot as plt
 
 def pobieranie():
     czas=datetime.datetime.now()
@@ -20,6 +21,20 @@ def pobieranie():
     wynik = str(cena)
     plik.write(str(wynik+","+data+"\n"))
     print(Kwaluta+" "+wynik+" "+Rwaluta+"\n")
+    wartosc=[]
+    daty=[]
+    otworz = open("log.txt", "r")
+    for row in otworz:
+        row=row.split(",")
+        wartosc.append(int(row[0]))
+        daty.append(str(row[1]))
+    plt.plot(daty, wartosc)
+    plt.xlabel('Daty', fontsize = 12)
+    plt.ylabel('Wartość', fontsize = 12)
+    plt.title('Wykres '+Kwaluta, fontsize = 20)
+    plt.savefig("fig1.jpg", dpi = 72)   
+    plt.show()
+
 
 def spanie():
     time.sleep(sekundy)
