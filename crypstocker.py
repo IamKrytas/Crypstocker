@@ -1,34 +1,41 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.3.2
-#update            08.12.2022
-#changelog         Dodanie warunku dla zamkniecia pliku
-#description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina oraz tworzeniem wykresu
+#version           0.4.0
+#update            14.02.2023
+#changelog         Dodanie zapisu do bazy danych oraz reorganizacja kodu
+#description       Program do obserwowania kursu kryptowalut
 
 import os
-import time
 import datetime
-from pycoingecko import CoinGeckoAPI
+import sqlite3
 import matplotlib.pyplot as plt
+from pycoingecko import CoinGeckoAPI
 
-def pobieranie():
-    czas=datetime.datetime.now()
-    data=czas.strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+def pobierz():
     cg=CoinGeckoAPI()
     dane=cg.get_price(ids=Kwaluta, vs_currencies=Rwaluta)
     cena = dane[Kwaluta][Rwaluta]
-    wynik = str(cena)
-    plik.write(str(wynik+","+data+"\n"))
+    #print(cena)
+    return cena
+
+def zapisz_txt():
+    czas=datetime.datetime.now()
+    data=czas.strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    cena=str(pobierz())
+    plik = open("log.txt","a")
+    plik.write(str(cena+","+data+"\n"))
     if plik.closed==False:
         plik.close()
-    print(Kwaluta+" "+wynik+" "+Rwaluta+"\n")
+    #print(Kwaluta+" "+cena+" "+Rwaluta+"\n")
+
+def wykres():
     wartosc=[]
     daty=[]
     otworz = open("log.txt", "r")
     for row in otworz:
         row=row.split(",")
-        wartosc.append(int(row[0]))
+        wartosc.append(float(row[0]))
         daty.append(str(row[1]))
     plt.plot(daty, wartosc)
     plt.xlabel('Daty', fontsize = 12)
@@ -39,24 +46,50 @@ def pobieranie():
     if otworz.closed==False:
         otworz.close()
 
-def spanie():
-    time.sleep(sekundy)
 
-def wykonanie():
-    krok = 1
-    spij=ilosc-1
-    while krok<=ilosc:
-        pobieranie()
-        while(krok<=spij):
-            spanie()
-            break
-        krok=krok+1
+def create_table():
+    conn=sqlite3.connect('crypto.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute('CREATE TABLE IF NOT EXISTS crypto (id INTEGER PRIMARY KEY, Cryptocurrency TEXT, value FLOAT, Currency TEXT, date TEXT)')
+    return 0
+
+def drop_table():
+    conn=sqlite3.connect('crypto.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute('DROP TABLE crypto')
+    conn.commit()
+
+def insert(cryptocurrency, currency):
+    data=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    value = pobierz()
+    conn=sqlite3.connect('crypto.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute('INSERT INTO crypto VALUES (NULL,?,?,?,?)', (cryptocurrency, value, currency, data))
+    conn.commit()
+    print("DATABASE UPDATED!")
+
+def view():
+    conn=sqlite3.connect('crypto.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM crypto')
+    conn.commit()
+    dane = cur.fetchall()
+    for row in dane:
+        print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
+
 
 if __name__ == '__main__':
-    os.system("cls")
-    plik = open("log.txt","a")
+    os.system('cls')
     Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
     Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
-    ilosc = int(input("Podaj ilosc pobran: "))
-    sekundy = int(input("Podaj ilosc sekund pomiedzy pobraniami: "))
-    wykonanie()
+    if (create_table()!=0):
+        create_table()
+    else:
+        insert(Kwaluta,Rwaluta)
+    view()
+    zapisz_txt()
+    wykres()
