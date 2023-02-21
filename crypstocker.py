@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.1
-#update            15.02.2023
-#changelog         Dodanie brakujacych zakonczen polaczen z baza danych
+#version           0.4.2
+#update            16.02.2023
+#changelog         Zmiana sposobu wyswietlania wykresu inportujac dane z bazy danych 
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -30,22 +30,26 @@ def zapisz_txt():
     #print(Kwaluta+" "+cena+" "+Rwaluta+"\n")
 
 def wykres():
-    wartosc=[]
-    daty=[]
-    otworz = open("log.txt", "r")
-    for row in otworz:
-        row=row.split(",")
-        wartosc.append(float(row[0]))
-        daty.append(str(row[1]))
-    plt.plot(daty, wartosc)
-    plt.xlabel('Daty', fontsize = 12)
-    plt.ylabel('Wartość', fontsize = 12)
+    conn=sqlite3.connect('crypto.db')
+    conn.row_factory=sqlite3.Row
+    cur=conn.cursor()
+    cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{Kwaluta}' AND Currency='{Rwaluta}' ORDER BY id DESC LIMIT 4")
+    conn.commit()
+    dane = cur.fetchall()
+    x=[]
+    y=[]
+    for row in dane:
+        x.append(row['date'])
+        y.append(row['value'])
+    x.reverse()
+    y.reverse()
+    plt.plot(x,y)
+    plt.xlabel('Daty', fontsize = 10)
+    plt.ylabel('Wartość', fontsize = 10)
     plt.title('Wykres '+Kwaluta, fontsize = 20)
-    plt.savefig("fig1.jpg", dpi = 72)   
+    plt.savefig("fig1.jpg", dpi = 72) 
     plt.show()
-    if otworz.closed==False:
-        otworz.close()
-
+    conn.close()
 
 def create_table():
     conn=sqlite3.connect('crypto.db')
@@ -54,8 +58,6 @@ def create_table():
     cur.execute('CREATE TABLE IF NOT EXISTS crypto (id INTEGER PRIMARY KEY, Cryptocurrency TEXT, value FLOAT, Currency TEXT, date TEXT)')
     conn.commit()
     conn.close()
-    return 0
-
 
 def drop_table():
     conn=sqlite3.connect('crypto.db')
@@ -87,15 +89,12 @@ def view():
         print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
     conn.close()
 
-
 if __name__ == '__main__':
     os.system('cls')
     Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
     Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
-    if (create_table()!=0):
-        create_table()
-    else:
-        insert(Kwaluta,Rwaluta)
+    create_table()
+    insert(Kwaluta,Rwaluta)
     view()
-    zapisz_txt()
+    #zapisz_txt()
     wykres()
