@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.2.0
-#update            19.09.2022
-#changelog         Dodanie osobnych funkcji i poprawienie funkcjonowania programu
+#version           0.2.1
+#update            20.09.2022
+#changelog         Kosmetyczne poprawki
 #description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina
 
 import os
@@ -32,10 +32,11 @@ def wykonanie():
             break
         krok=krok+1
 
-os.system("cls")
-plik = open("log.txt","a")
-Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
-Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
-ilosc = int(input("Podaj ilosc pobran: "))
-sekundy = int(input("Podaj ilosc sekund pomiedzy pobraniami: "))
-wykonanie()
+if __name__ == '__main__':
+    os.system("cls")
+    plik = open("log.txt","a")
+    Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
+    Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
+    ilosc = int(input("Podaj ilosc pobran: "))
+    sekundy = int(input("Podaj ilosc sekund pomiedzy pobraniami: "))
+    wykonanie()
