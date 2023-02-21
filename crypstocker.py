@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.3.1
-#update            05.12.2022
-#changelog         Dodanie wyswietlania wykresu pobierajac dane z pliku txt
+#version           0.3.2
+#update            08.12.2022
+#changelog         Dodanie warunku dla zamkniecia pliku
 #description       Program pobierajacy kursy kryptowalut z zapiem do pliku wraz z data i godzina oraz tworzeniem wykresu
 
 import os
@@ -20,6 +20,8 @@ def pobieranie():
     cena = dane[Kwaluta][Rwaluta]
     wynik = str(cena)
     plik.write(str(wynik+","+data+"\n"))
+    if plik.closed==False:
+        plik.close()
     print(Kwaluta+" "+wynik+" "+Rwaluta+"\n")
     wartosc=[]
     daty=[]
@@ -34,7 +36,8 @@ def pobieranie():
     plt.title('Wykres '+Kwaluta, fontsize = 20)
     plt.savefig("fig1.jpg", dpi = 72)   
     plt.show()
-
+    if otworz.closed==False:
+        otworz.close()
 
 def spanie():
     time.sleep(sekundy)
