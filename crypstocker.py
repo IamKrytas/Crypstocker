@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.2
-#update            16.02.2023
-#changelog         Zmiana sposobu wyswietlania wykresu inportujac dane z bazy danych 
+#version           0.4.3
+#update            19.02.2023
+#changelog         Zmiana wyswietlania wykresu
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -44,9 +44,10 @@ def wykres():
     x.reverse()
     y.reverse()
     plt.plot(x,y)
+    plt.ticklabel_format(style='plain', axis='y')
     plt.xlabel('Daty', fontsize = 10)
-    plt.ylabel('Wartość', fontsize = 10)
-    plt.title('Wykres '+Kwaluta, fontsize = 20)
+    plt.ylabel(f'Wartość w {Rwaluta}', fontsize = 10)
+    plt.title(f'Wykres {Kwaluta}', fontsize = 20)
     plt.savefig("fig1.jpg", dpi = 72) 
     plt.show()
     conn.close()
