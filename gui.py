@@ -1,21 +1,23 @@
 #name              Crypstocker-gui
 #author            IamKrytas
 #language          Python3
-#version           0.1.0
-#update            21.02.2023
-#changelog         Zainicjowanie wstepnej wersji gui
+#version           0.1.1
+#update            22.02.2023
+#changelog         Zaimplementowanie funkcji i 
 #description       Interfejs graficzny crypstocker
 
-
+import crypstocker
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
+from tkinter import messagebox
 
 class App:
     def __init__(self, root):
-        self.Wartosc1 = ''
-        self.Wartosc2 = ''
-        root.title("xxxxxxxxx")
+        self.Kwaluta = ''
+        self.Rwaluta = ''
+
+        root.title("Crypstocker")
         width=350
         height=320
         screenwidth = root.winfo_screenwidth()
@@ -30,7 +32,7 @@ class App:
         napis["fg"] = "#333333"
         napis["justify"] = "center"
         napis["text"] = "Wybierz z list"
-        napis.place(x=60,y=10,width=200,height=40)
+        napis.place(x=60,y=10,width=220,height=40)
 
         napis1=tk.Label(root)
         ft = tkFont.Font(family='Times',size=10)
@@ -48,25 +50,15 @@ class App:
         napis2["text"] = "Waluta"
         napis2.place(x=220,y=60,width=60,height=20)
 
-        przycisk=tk.Button(root)
-        przycisk["bg"] = "#f0f0f0"
+        pobierz=tk.Button(root)
+        pobierz["bg"] = "#f0f0f0"
         ft = tkFont.Font(family='Times',size=10)
-        przycisk["font"] = ft
-        przycisk["fg"] = "#000000"
-        przycisk["justify"] = "center"
-        przycisk["text"] = "Pobierz"
-        przycisk.place(x=90,y=220,width=145,height=56)
-        przycisk["command"] = self.pobierz
-
-        przyciskDB=tk.Button(root)
-        przyciskDB["bg"] = "#f0f0f0"
-        ft = tkFont.Font(family='Times',size=10)
-        przyciskDB["font"] = ft
-        przyciskDB["fg"] = "#000000"
-        przyciskDB["justify"] = "center"
-        przyciskDB["text"] = "DB"
-        przyciskDB.place(x=280,y=10,width=50,height=50)
-        przyciskDB["command"] = self.przyciskDB_command 
+        pobierz["font"] = ft
+        pobierz["fg"] = "#000000"
+        pobierz["justify"] = "center"
+        pobierz["text"] = "Pobierz"
+        pobierz.place(x=90,y=220,width=145,height=56)
+        pobierz["command"] = self.pobierz
 
         lista1=tk.Listbox(root)
         lista1.cb_value = tk.StringVar()
@@ -85,22 +77,28 @@ class App:
         lista2.combobox.bind("<<ComboboxSelected>>", self.on_select_changed2)
 
 
-    def przyciskDB_command(self):
-        print("Dodano do bazy")
-
     def przycisk_command(self):
         print("Pobrano dane")
 
+
     def on_select_changed1(self, event):
-        pass
+        self.Kwaluta = event.widget.get() # zwraca wartość zaznaczenia
+        self.Kwaluta = self.Kwaluta.lower()
+        print(self.Kwaluta)
 
     def on_select_changed2(self, event):
-        pass
+        self.Rwaluta = event.widget.get() # zwraca wartość zaznaczenia
+        self.Rwaluta = self.Rwaluta.lower()
+        print(self.Rwaluta)
 
     def pobierz(self):
-        pass
-    
-#event.widget.get() # zwraca wartość zaznaczenia
+        if(self.Kwaluta == '' or self.Rwaluta == ''):
+            messagebox.showerror("Błąd", "Wybierz kryptowalutę i walutę")
+        else:
+            print(f"Pobrano dane dla {self.Kwaluta} w {self.Rwaluta}")
+            crypstocker.insert(self.Kwaluta, self.Rwaluta)
+            crypstocker.wykres(self.Kwaluta, self.Rwaluta)
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
