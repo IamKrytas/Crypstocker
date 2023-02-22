@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.3
-#update            19.02.2023
-#changelog         Zmiana wyswietlania wykresu
+#version           0.4.4
+#update            22.02.2023
+#changelog         Dodanie parametrów funkcji
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -12,11 +12,11 @@ import sqlite3
 import matplotlib.pyplot as plt
 from pycoingecko import CoinGeckoAPI
 
-def pobierz():
+def pobierz(Kwaluta, Rwaluta):
     cg=CoinGeckoAPI()
     dane=cg.get_price(ids=Kwaluta, vs_currencies=Rwaluta)
     cena = dane[Kwaluta][Rwaluta]
-    #print(cena)
+    print(cena)
     return cena
 
 def zapisz_txt():
@@ -29,7 +29,7 @@ def zapisz_txt():
         plik.close()
     #print(Kwaluta+" "+cena+" "+Rwaluta+"\n")
 
-def wykres():
+def wykres(Kwaluta, Rwaluta):
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
@@ -70,7 +70,7 @@ def drop_table():
 
 def insert(cryptocurrency, currency):
     data=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
-    value = pobierz()
+    value = pobierz(cryptocurrency, currency)
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
@@ -94,6 +94,8 @@ if __name__ == '__main__':
     os.system('cls')
     Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
     Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
+    Kwaluta = Kwaluta.lower()
+    Rwaluta = Rwaluta.lower()
     create_table()
     insert(Kwaluta,Rwaluta)
     view()
