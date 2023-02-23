@@ -1,9 +1,9 @@
 #name              Crypstocker-gui
 #author            IamKrytas
 #language          Python3
-#version           0.1.1
-#update            22.02.2023
-#changelog         Zaimplementowanie funkcji i 
+#version           0.1.2
+#update            23.02.2023
+#changelog         Dodanie wartosci domyslnych do list
 #description       Interfejs graficzny crypstocker
 
 import crypstocker
@@ -63,42 +63,38 @@ class App:
         lista1=tk.Listbox(root)
         lista1.cb_value = tk.StringVar()
         lista1.combobox = ttk.Combobox(root, textvariable = lista1.cb_value)
+        lista1.combobox.set('wybierz')
         lista1.combobox.place(x = 30, y = 80)
         lista1.combobox['values'] = ('Bitcoin', 'Litecoin', 'Ethereum')
-        lista1.combobox.current(0)
         lista1.combobox.bind("<<ComboboxSelected>>", self.on_select_changed1)
 
         lista2=tk.Listbox(root)
         lista2.cb_value = tk.StringVar()
         lista2.combobox = ttk.Combobox(root, textvariable = lista2.cb_value)
+        lista2.combobox.set('wybierz')
         lista2.combobox.place(x = 180, y = 80)
         lista2.combobox['values'] = ('pln', 'usd', 'eur')
-        lista2.combobox.current(0)
         lista2.combobox.bind("<<ComboboxSelected>>", self.on_select_changed2)
-
-
-    def przycisk_command(self):
-        print("Pobrano dane")
 
 
     def on_select_changed1(self, event):
         self.Kwaluta = event.widget.get() # zwraca wartość zaznaczenia
         self.Kwaluta = self.Kwaluta.lower()
-        print(self.Kwaluta)
+        #print(self.Kwaluta)
 
     def on_select_changed2(self, event):
         self.Rwaluta = event.widget.get() # zwraca wartość zaznaczenia
         self.Rwaluta = self.Rwaluta.lower()
-        print(self.Rwaluta)
+        #print(self.Rwaluta)
 
     def pobierz(self):
         if(self.Kwaluta == '' or self.Rwaluta == ''):
             messagebox.showerror("Błąd", "Wybierz kryptowalutę i walutę")
         else:
-            print(f"Pobrano dane dla {self.Kwaluta} w {self.Rwaluta}")
+            #print(f"Pobrano dane dla {self.Kwaluta} w {self.Rwaluta}")
             crypstocker.insert(self.Kwaluta, self.Rwaluta)
             crypstocker.wykres(self.Kwaluta, self.Rwaluta)
-
+            
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
