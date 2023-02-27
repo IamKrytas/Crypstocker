@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.4
-#update            22.02.2023
-#changelog         Dodanie parametrów funkcji
+#version           0.4.5
+#update            27.02.2023
+#changelog         Dodanie parametrow w wywolaniu funkcji wykres
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -90,6 +90,7 @@ def view():
         print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
     conn.close()
 
+
 if __name__ == '__main__':
     os.system('cls')
     Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
@@ -100,4 +101,4 @@ if __name__ == '__main__':
     insert(Kwaluta,Rwaluta)
     view()
     #zapisz_txt()
-    wykres()
+    wykres(Kwaluta, Rwaluta)
