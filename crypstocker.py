@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.5
-#update            27.02.2023
-#changelog         Dodanie parametrow w wywolaniu funkcji wykres
+#version           0.4.6
+#update            28.02.2023
+#changelog         Naprawienie funkcji zapisu do pliku oraz refaktoryzacja kodu
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -12,28 +12,27 @@ import sqlite3
 import matplotlib.pyplot as plt
 from pycoingecko import CoinGeckoAPI
 
-def pobierz(Kwaluta, Rwaluta):
+def pobierz(cryptocurrency, currency):
     cg=CoinGeckoAPI()
-    dane=cg.get_price(ids=Kwaluta, vs_currencies=Rwaluta)
-    cena = dane[Kwaluta][Rwaluta]
-    print(cena)
-    return cena
+    value=cg.get_price(ids=cryptocurrency, vs_currencies=currency)
+    price = value[cryptocurrency][currency]
+    print(price)
+    return price
 
-def zapisz_txt():
-    czas=datetime.datetime.now()
-    data=czas.strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
-    cena=str(pobierz())
+def zapisz_txt(cryptocurrency, currency):
+    date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    price=str(pobierz())
     plik = open("log.txt","a")
-    plik.write(str(cena+","+data+"\n"))
+    plik.write(f"{cryptocurrency},{price},{currency},{date}\n")
     if plik.closed==False:
         plik.close()
-    #print(Kwaluta+" "+cena+" "+Rwaluta+"\n")
+    #print(cryptocurrency+" "+price+" "+currency+"\n")
 
-def wykres(Kwaluta, Rwaluta):
+def wykres(cryptocurrency, currency):
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
-    cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{Kwaluta}' AND Currency='{Rwaluta}' ORDER BY id DESC LIMIT 4")
+    cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{cryptocurrency}' AND Currency='{currency}' ORDER BY id DESC LIMIT 4")
     conn.commit()
     dane = cur.fetchall()
     x=[]
@@ -46,8 +45,8 @@ def wykres(Kwaluta, Rwaluta):
     plt.plot(x,y)
     plt.ticklabel_format(style='plain', axis='y')
     plt.xlabel('Daty', fontsize = 10)
-    plt.ylabel(f'Wartość w {Rwaluta}', fontsize = 10)
-    plt.title(f'Wykres {Kwaluta}', fontsize = 20)
+    plt.ylabel(f'Wartość w {currency}', fontsize = 10)
+    plt.title(f'Wykres {cryptocurrency}', fontsize = 20)
     plt.savefig("fig1.jpg", dpi = 72) 
     plt.show()
     conn.close()
@@ -69,17 +68,17 @@ def drop_table():
     conn.close()
 
 def insert(cryptocurrency, currency):
-    data=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
     value = pobierz(cryptocurrency, currency)
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
-    cur.execute('INSERT INTO crypto VALUES (NULL,?,?,?,?)', (cryptocurrency, value, currency, data))
+    cur.execute('INSERT INTO crypto VALUES (NULL,?,?,?,?)', (cryptocurrency, value, currency, date))
     conn.commit()
     conn.close()
-    print("DATABASE UPDATED!")
+    #print("DATABASE UPDATED!")
 
-def view():
+def view_table():
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
@@ -93,12 +92,12 @@ def view():
 
 if __name__ == '__main__':
     os.system('cls')
-    Kwaluta = input("Podaj pelna nazwe kryptowaluty: ")
-    Rwaluta = input("Podaj skrot oznaczenie waluty swiatowej: ")
-    Kwaluta = Kwaluta.lower()
-    Rwaluta = Rwaluta.lower()
+    cryptocurrency = input("Podaj pelna nazwe kryptowaluty: ")
+    currency = input("Podaj skrot oznaczenie waluty swiatowej: ")
+    cryptocurrency = cryptocurrency.lower()
+    currency = currency.lower()
     create_table()
-    insert(Kwaluta,Rwaluta)
-    view()
-    #zapisz_txt()
-    wykres(Kwaluta, Rwaluta)
+    insert(cryptocurrency,currency)
+    view_table()
+    #zapisz_txt(cryptocurrency, currency)
+    wykres(cryptocurrency, currency)
