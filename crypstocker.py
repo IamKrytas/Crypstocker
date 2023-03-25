@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.6
-#update            28.02.2023
-#changelog         Naprawienie funkcji zapisu do pliku oraz refaktoryzacja kodu
+#version           0.4.7
+#update            25.03.2023
+#changelog         Zmiana funkcji wyświetlania wykresu
 #description       Program do obserwowania kursu kryptowalut
 
 import os
@@ -28,11 +28,11 @@ def zapisz_txt(cryptocurrency, currency):
         plik.close()
     #print(cryptocurrency+" "+price+" "+currency+"\n")
 
-def wykres(cryptocurrency, currency):
+def wykres(cryptocurrency, currency, range):
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
-    cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{cryptocurrency}' AND Currency='{currency}' ORDER BY id DESC LIMIT 4")
+    cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{cryptocurrency}' AND Currency='{currency}' ORDER BY id DESC LIMIT {range}")
     conn.commit()
     dane = cur.fetchall()
     x=[]
@@ -42,7 +42,8 @@ def wykres(cryptocurrency, currency):
         y.append(row['value'])
     x.reverse()
     y.reverse()
-    plt.plot(x,y)
+    plt.plot(x, y, linewidth=3, marker='o', markersize=5)
+    plt.xticks([x[0],x[-1]], visible=True)
     plt.ticklabel_format(style='plain', axis='y')
     plt.xlabel('Daty', fontsize = 10)
     plt.ylabel(f'Wartość w {currency}', fontsize = 10)
@@ -70,13 +71,13 @@ def drop_table():
 def insert(cryptocurrency, currency):
     date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
     value = pobierz(cryptocurrency, currency)
+    create_table()
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
     cur.execute('INSERT INTO crypto VALUES (NULL,?,?,?,?)', (cryptocurrency, value, currency, date))
     conn.commit()
     conn.close()
-    #print("DATABASE UPDATED!")
 
 def view_table():
     conn=sqlite3.connect('crypto.db')
@@ -96,8 +97,7 @@ if __name__ == '__main__':
     currency = input("Podaj skrot oznaczenie waluty swiatowej: ")
     cryptocurrency = cryptocurrency.lower()
     currency = currency.lower()
-    create_table()
     insert(cryptocurrency,currency)
     view_table()
     #zapisz_txt(cryptocurrency, currency)
-    wykres(cryptocurrency, currency)
+    wykres(cryptocurrency, currency, 5)
