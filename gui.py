@@ -1,9 +1,9 @@
 #name              Crypstocker-gui
 #author            IamKrytas
 #language          Python3
-#version           0.1.2
-#update            23.02.2023
-#changelog         Dodanie wartosci domyslnych do list
+#version           0.2.0
+#update            25.03.2023
+#changelog         Dodanie nowego okna z ustawieniami wykresu (wstepna wersja)
 #description       Interfejs graficzny crypstocker
 
 import crypstocker
@@ -14,8 +14,8 @@ from tkinter import messagebox
 
 class App:
     def __init__(self, root):
-        self.Kwaluta = ''
-        self.Rwaluta = ''
+        self.cryptocurrency = ''
+        self.currency = ''
 
         root.title("Crypstocker")
         width=350
@@ -78,22 +78,63 @@ class App:
 
 
     def on_select_changed1(self, event):
-        self.Kwaluta = event.widget.get() # zwraca wartość zaznaczenia
-        self.Kwaluta = self.Kwaluta.lower()
-        #print(self.Kwaluta)
+        self.cryptocurrency = event.widget.get()
+        self.cryptocurrency = self.cryptocurrency.lower()
+        #print(self.cryptocurrency)
 
     def on_select_changed2(self, event):
-        self.Rwaluta = event.widget.get() # zwraca wartość zaznaczenia
-        self.Rwaluta = self.Rwaluta.lower()
-        #print(self.Rwaluta)
+        self.currency = event.widget.get()
+        self.currency = self.currency.lower()
+        #print(self.currency)
+
 
     def pobierz(self):
-        if(self.Kwaluta == '' or self.Rwaluta == ''):
+        if(self.cryptocurrency == '' or self.currency == ''):
             messagebox.showerror("Błąd", "Wybierz kryptowalutę i walutę")
         else:
-            #print(f"Pobrano dane dla {self.Kwaluta} w {self.Rwaluta}")
-            crypstocker.insert(self.Kwaluta, self.Rwaluta)
-            crypstocker.wykres(self.Kwaluta, self.Rwaluta)
+            crypstocker.insert(self.cryptocurrency, self.currency)
+            #new window with settings for chart
+            #TODO: Create new class for this window
+            newWindow = tk.Toplevel(root)
+            newWindow.title("Ustawienia wykresu")
+            newWindow.geometry("300x200")
+            newWindow.resizable(width=False, height=False)
+            newLabel = tk.Label(newWindow, text="Wybierz zakres")
+
+            enterbox=tk.Entry(newWindow)
+            enterbox["borderwidth"] = "1px"
+            ft = tkFont.Font(family='Times',size=10)
+            enterbox["font"] = ft
+            enterbox["fg"] = "#333333"
+            enterbox["justify"] = "center"
+            enterbox["text"] = "Entry"
+            enterbox.place(x=120,y=50,width=50,height=50)
+            self.enterbox = enterbox
+
+            display_chart_btn=tk.Button(newWindow)
+            display_chart_btn["bg"] = "#f0f0f0"
+            ft = tkFont.Font(family='Times',size=10)
+            display_chart_btn["font"] = ft
+            display_chart_btn["fg"] = "#000000"
+            display_chart_btn["justify"] = "center"
+            display_chart_btn["text"] = "Button"
+            display_chart_btn.place(x=140,y=150,width=50,height=50)
+            display_chart_btn["command"] = self.display_chart_btn_command
+            #TODO: Add other labels and events
+
+    #funkcja sprawdza czy podana wartosc to liczba dwucyfrowa z przedzialu 1-10
+    def validate_enter(self):
+        if self.enterbox.get().isdigit() and 0 < int(self.enterbox.get()) <= 10:
+            return self.enterbox.get()
+        else:
+            messagebox.showerror("Błąd", "Liczba musi być w zakresie 1-10")
+            self.enterbox.delete(0, tk.END)
+            return 0
+                    
+    def display_chart_btn_command(self):
+        if(self.validate_enter() != 0):
+            crypstocker.wykres(self.cryptocurrency, self.currency, self.validate_enter())
+        #print(self.validate_enter())
             
 if __name__ == "__main__":
     root = tk.Tk()
