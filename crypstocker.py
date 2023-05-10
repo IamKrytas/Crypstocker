@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.8
-#update            08.05.2023
-#changelog         Change to English language
+#version           0.4.9
+#update            10.05.2023
+#changelog         Add Try/Except in download function and refactor other functions
 #description       Cryptocurrency tracking program
 
 import os
@@ -13,20 +13,21 @@ import matplotlib.pyplot as plt
 from pycoingecko import CoinGeckoAPI
 
 def download(cryptocurrency, currency):
-    cg=CoinGeckoAPI()
-    value=cg.get_price(ids=cryptocurrency, vs_currencies=currency)
-    price = value[cryptocurrency][currency]
-    print(price)
-    return price
+    try:
+        cg=CoinGeckoAPI()
+        value=cg.get_price(ids=cryptocurrency, vs_currencies=currency)
+        price = value[cryptocurrency][currency]
+        print(price)
+        return price
+    except:
+        print("Error! Check your internet connection or try again later")
 
 def save_txt(cryptocurrency, currency):
     date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
     price=str(download())
-    plik = open("log.txt","a")
-    plik.write(f"{cryptocurrency},{price},{currency},{date}\n")
-    if plik.closed==False:
-        plik.close()
-    #print(cryptocurrency+" "+price+" "+currency+"\n")
+    with open("crypto.txt", "a") as file:
+        file.write(f"{cryptocurrency},{price},{currency},{date}\n")
+    #print(f"{cryptocurrency},{price},{currency},{date}\n")
 
 def chart(cryptocurrency, currency, range):
     conn=sqlite3.connect('crypto.db')
@@ -79,11 +80,11 @@ def insert(cryptocurrency, currency):
     conn.commit()
     conn.close()
 
-def view_table():
+def view_table(start_id, end_id):
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
-    cur.execute('SELECT * FROM crypto')
+    cur.execute(f"SELECT * FROM crypto WHERE id BETWEEN {start_id} AND {end_id}")
     conn.commit()
     dane = cur.fetchall()
     for row in dane:
@@ -98,6 +99,6 @@ if __name__ == '__main__':
     cryptocurrency = cryptocurrency.lower()
     currency = currency.lower()
     insert(cryptocurrency,currency)
-    view_table()
+    view_table(0,-1)
     #save_txt(cryptocurrency, currency)
     chart(cryptocurrency, currency, 5)
