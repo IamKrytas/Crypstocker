@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.4.9
-#update            10.05.2023
-#changelog         Add Try/Except in download function and refactor other functions
+#version           0.5.0
+#update            22.05.2023
+#changelog         Add function to predict price using Linear Regression and recreate function chart
 #description       Cryptocurrency tracking program
 
 import os
@@ -11,6 +11,7 @@ import datetime
 import sqlite3
 import matplotlib.pyplot as plt
 from pycoingecko import CoinGeckoAPI
+from sklearn.linear_model import LinearRegression
 
 def download(cryptocurrency, currency):
     try:
@@ -23,7 +24,7 @@ def download(cryptocurrency, currency):
         print("Error! Check your internet connection or try again later")
 
 def save_txt(cryptocurrency, currency):
-    date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M")
     price=str(download())
     with open("crypto.txt", "a") as file:
         file.write(f"{cryptocurrency},{price},{currency},{date}\n")
@@ -38,18 +39,24 @@ def chart(cryptocurrency, currency, range):
     dane = cur.fetchall()
     x=[]
     y=[]
+    prediction = predict(cryptocurrency, currency)
     for row in dane:
         x.append(row['date'])
         y.append(row['value'])
     x.reverse()
     y.reverse()
-    plt.plot(x, y, linewidth=3, marker='o', markersize=5)
-    plt.xticks([x[0],x[-1]], visible=True)
-    plt.ticklabel_format(style='plain', axis='y')
-    plt.xlabel('Date', fontsize = 10)
-    plt.ylabel(f'Value in {currency}', fontsize = 10)
-    plt.title(f'Chart {cryptocurrency}', fontsize = 20)
-    plt.savefig("fig1.jpg", dpi = 72) 
+    x.append(prediction[1])
+    y.append(prediction[0])
+
+    plt.scatter(x[:-2], y[:-2], marker='o', s=50, color='blue')
+    plt.scatter(x[-2], y[-2], marker='o', s=50, color='blue')
+    plt.scatter(x[-1], y[-1], marker='o', s=50, color='red')
+    plt.plot(x, y, 'k-', linewidth=2)
+    plt.xticks([x[0],x[-2]], visible=True)
+    plt.xlabel('Date', fontsize=10)
+    plt.ylabel(f'Value in {currency}', fontsize=10)
+    plt.title(f'Chart {cryptocurrency}', fontsize=20)
+    plt.savefig("fig1.jpg", dpi=72)
     plt.show()
     conn.close()
 
@@ -70,7 +77,7 @@ def drop_table():
     conn.close()
 
 def insert(cryptocurrency, currency):
-    date=datetime.datetime.now().strftime("%Y"+"-"+"%m"+"-"+"%d"+" "+"%H"+":"+"%M")
+    date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M")
     value = download(cryptocurrency, currency)
     create_table()
     conn=sqlite3.connect('crypto.db')
@@ -80,25 +87,44 @@ def insert(cryptocurrency, currency):
     conn.commit()
     conn.close()
 
-def view_table(start_id, end_id):
+def view_table():
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
-    cur.execute(f"SELECT * FROM crypto WHERE id BETWEEN {start_id} AND {end_id}")
+    cur.execute(f"SELECT * FROM crypto")
     conn.commit()
-    dane = cur.fetchall()
-    for row in dane:
+    data = cur.fetchall()
+    for row in data:
         print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
     conn.close()
 
+def predict(cryptocurrency, currency):
+        conn=sqlite3.connect('crypto.db')
+        conn.row_factory=sqlite3.Row
+        cur=conn.cursor()
+        cur.execute(f"SELECT * FROM crypto WHERE Cryptocurrency='{cryptocurrency}' AND Currency='{currency}' ORDER BY id DESC")
+        conn.commit()
+        dane = cur.fetchall()
+        x=[]
+        for row in dane:
+            x.append(row['value'])
+        x.reverse()
+        print(x)
+        model = LinearRegression()
+        model.fit([[i] for i in range(len(x))], x)
+        result = model.predict([[len(x) + 1]])[0].round(0)
+        print(f"Predicted price for {cryptocurrency} in {currency} is {result}")
+        conn.close()
+        date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M:%S")
+        return [result, date]
+
 
 if __name__ == '__main__':
+    chart('bitcoin', 'usd', 12)
+    """
     os.system('cls')
-    cryptocurrency = input("Enter the full name of the cryptocurrency: ")
-    currency = input("Enter the short form of the world currency: ")
-    cryptocurrency = cryptocurrency.lower()
-    currency = currency.lower()
-    insert(cryptocurrency,currency)
-    view_table(0,-1)
+    cryptocurrency = input("Enter the full name of the cryptocurrency: ").lower()
+    currency = input("Enter the short form of the world currency: ").lower()
+    insert(cryptocurrency,currency
+    """
     #save_txt(cryptocurrency, currency)
-    chart(cryptocurrency, currency, 5)
