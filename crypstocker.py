@@ -1,9 +1,9 @@
 #name              Crypstocker
 #author            IamKrytas
 #language          Python3
-#version           0.5.0
-#update            22.05.2023
-#changelog         Add function to predict price using Linear Regression and recreate function chart
+#version           0.5.1
+#update            04.07.2023
+#changelog         Add annotations to all functions
 #description       Cryptocurrency tracking program
 
 import os
@@ -13,7 +13,16 @@ import matplotlib.pyplot as plt
 from pycoingecko import CoinGeckoAPI
 from sklearn.linear_model import LinearRegression
 
-def download(cryptocurrency, currency):
+def main():
+    """
+    os.system('cls')
+    cryptocurrency = input("Enter the full name of the cryptocurrency: ").lower()
+    currency = input("Enter the short form of the world currency: ").lower()
+    insert(cryptocurrency,currency
+    #save_txt(cryptocurrency, currency)""
+    """
+
+def download(cryptocurrency: str, currency: str) -> int:
     try:
         cg=CoinGeckoAPI()
         value=cg.get_price(ids=cryptocurrency, vs_currencies=currency)
@@ -23,14 +32,14 @@ def download(cryptocurrency, currency):
     except:
         print("Error! Check your internet connection or try again later")
 
-def save_txt(cryptocurrency, currency):
+def save_txt(cryptocurrency: str, currency: str):
     date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M")
     price=str(download())
     with open("crypto.txt", "a") as file:
         file.write(f"{cryptocurrency},{price},{currency},{date}\n")
     #print(f"{cryptocurrency},{price},{currency},{date}\n")
 
-def chart(cryptocurrency, currency, range):
+def chart(cryptocurrency: str, currency: str, range: int, ifprediction: int):
     conn=sqlite3.connect('crypto.db')
     conn.row_factory=sqlite3.Row
     cur=conn.cursor()
@@ -50,8 +59,11 @@ def chart(cryptocurrency, currency, range):
 
     plt.scatter(x[:-2], y[:-2], marker='o', s=50, color='blue')
     plt.scatter(x[-2], y[-2], marker='o', s=50, color='blue')
-    plt.scatter(x[-1], y[-1], marker='o', s=50, color='red')
-    plt.plot(x, y, 'k-', linewidth=2)
+    if ifprediction == 1:
+        plt.scatter(x[-1], y[-1], marker='o', s=50, color='red')
+        plt.plot(x, y, 'k-', linewidth=2)
+    else:
+        plt.plot(x[:-1], y[:-1], 'k-', linewidth=2)
     plt.xticks([x[0],x[-2]], visible=True)
     plt.xlabel('Date', fontsize=10)
     plt.ylabel(f'Value in {currency}', fontsize=10)
@@ -76,7 +88,7 @@ def drop_table():
     conn.commit()
     conn.close()
 
-def insert(cryptocurrency, currency):
+def insert(cryptocurrency: str, currency: str):
     date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M")
     value = download(cryptocurrency, currency)
     create_table()
@@ -98,7 +110,7 @@ def view_table():
         print(row['id'], row['Cryptocurrency'], row['value'], row['Currency'], row['date'])
     conn.close()
 
-def predict(cryptocurrency, currency):
+def predict(cryptocurrency: str, currency: str) -> list:
         conn=sqlite3.connect('crypto.db')
         conn.row_factory=sqlite3.Row
         cur=conn.cursor()
@@ -118,13 +130,5 @@ def predict(cryptocurrency, currency):
         date=datetime.datetime.now().strftime(f"%Y-%m-%d %H:%M:%S")
         return [result, date]
 
-
 if __name__ == '__main__':
-    chart('bitcoin', 'usd', 12)
-    """
-    os.system('cls')
-    cryptocurrency = input("Enter the full name of the cryptocurrency: ").lower()
-    currency = input("Enter the short form of the world currency: ").lower()
-    insert(cryptocurrency,currency
-    """
-    #save_txt(cryptocurrency, currency)
+    main()
